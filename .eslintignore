@@ -1,0 +1,12 @@
+node_modules
+scripts
+postcss.config.js
+webpack.*
+src/graphql/generated.ts
+
+
+# amplify
+
+src/graphql
+
+amplify-codegen-temp/models
