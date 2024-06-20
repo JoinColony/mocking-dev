@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>BridgeXYZ KYC</title>
+        <script>
+            window.onload = function() {
+                var frm = document.forms[0];
+                const urlParams = new URLSearchParams(location.search);
+                const session_token = urlParams.get('session_token')
+                frm.session_token.value = session_token;
+            }
+        </script>
+    </head>
+    <body>
+        <h1>BridgeXYZ KYC</h1>
+        <p>BridgeXYZ KYC page</p>
+        <form method="POST">
+            <input type="hidden" name="session_token" value="" />
+            <input type = "radio" name = "kyc" value = "valid"/>Valid docs<br/>
+            <input type = "radio" name = "kyc" value = "invalid"/>Invalid docs<br/>
+            <input type = "radio" name = "kyc" value = "incomplete"/>Incomplete docs<br/>
+            <button type="submit">Submit</button>
+        </form>
+    </body>
+</html>
