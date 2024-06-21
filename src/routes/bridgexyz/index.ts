@@ -1,18 +1,45 @@
 /* eslint-disable camelcase */
+import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
 import express, { type Request, type Response } from 'express';
-import fs, { fstat } from 'fs';
+import fs from 'fs';
+import iso3166 from 'iso-3166-2';
+import postalCodes from 'postal-codes-js';
 import { v4 as uuidv4 } from 'uuid';
 
-import data from './data';
-import {
-  type Customer,
-  type BankAccountCommon,
-  BankAccountIBAN,
-  BankAccountUS,
-  LiquidationAddress,
-  LiquidationAddressSepa,
-} from './types';
+import data from './data.ts';
+import { type BankAccountCommon } from './types.ts';
+
+function validateAddress(addressObject: { [key: string]: string }) {
+  // street_line_2 can be provided, but can be anything
+  const { street_line_1, city, postal_code, state, country } = addressObject;
+  if (!street_line_1 || !city || !country) {
+    return false;
+  }
+
+  const lookedUpCountry = iso3166.country(country);
+  if (!lookedUpCountry) {
+    return false;
+  }
+
+  // State must be an ISO 3166-2 code, must be supplied if country has subdivisions
+  if (state && !iso3166.subdivision(country, state)) {
+    return false;
+  }
+  if (!state && Object.keys(lookedUpCountry.sub).length > 0) {
+    return false;
+  }
+
+  // Validating against '.' only works 
+  if (
+    postalCodes.validate(country, postal_code) !== true ||
+    postalCodes.validate(country, '.') !== true
+  ) {
+    return false;
+  }
+
+  return true;
+}
 
 // TODO: Idempontency key
 
@@ -58,28 +85,60 @@ router.post('/persona/kyc', (req: Request, res: Response) => {
   }
   if (req.body.kyc === 'valid') {
     data.customers[c[0]].kyc_status = 'approved';
+
+    // Fill customer data from their 'docs'
   } else if (req.body.kyc === 'invalid') {
     data.customers[c[0]].kyc_status = 'rejected';
     data.customers[c[0]].rejection_reasons.push('KYC was invalid');
   } else {
     data.customers[c[0]].kyc_status = 'incomplete';
   }
-  res.status(204).send();
+  return res.status(204).send();
+});
+
+router.get('/accept-terms-of-service', (req: Request, res: Response) => {
+  const form = fs.readFileSync(`${__dirname}/tos.html`, 'utf8');
+  res.send(form);
+});
+
+router.get('/iframe', (req: Request, res: Response) => {
+  const form = fs.readFileSync(`${__dirname}/iframe.html`, 'utf8');
+  res.send(form);
+});
+
+router.post('/accept-terms-of-service', (req: Request, res: Response) => {
+  // If known session id, create a signed_agreement_id;
+  const { session_token, redirect_uri } = req.body;
+  if (!session_token) {
+    return res.status(400).json({
+      code: 'bad_request',
+      message: 'session_token is required',
+    });
+  }
+  if (data.tosIds[session_token] === undefined) {
+    return res.status(404).json({
+      code: 'Invalid',
+      message: 'Unknown session id',
+    });
+  }
+  const signed_agreement_id = uuidv4();
+  data.tosIds[session_token] = signed_agreement_id;
+
+  if (redirect_uri) {
+    res.redirect(`${redirect_uri}?signed_agreement_id=${signed_agreement_id}`);
+  }
+  return res.send({ signed_agreement_id });
 });
 
 router.post('v0/kyc_links', (req: Request, res: Response) => {
   const { full_name, email, type } = req.body;
   if (!full_name || !email || !type) {
+    const names = ['full_name', 'email', 'type'];
+    const missing = names.filter((name) => !req.body[name]);
     return res.status(400).json({
       code: 'bad_customer_request',
       message: 'fields missing from customer body.',
-      name: `${full_name}`
-        ? ''
-        : `full_name${email}`
-          ? ''
-          : `email${type}`
-            ? ''
-            : 'type',
+      name: missing.join(', '),
     });
   }
   if (req.body.type !== 'individual') {
@@ -189,11 +248,10 @@ router.get(
 router.post(
   'v0/customers/:customerID/external_accounts',
   (req: Request, res: Response) => {
-    let {
-      currency,
+    let { currency, account_type } = req.body;
+    const {
       bank_name,
       account_owner_name,
-      account_type,
       iban,
       account,
       account_owner_type,
@@ -221,18 +279,12 @@ router.post(
       });
     }
 
-    if (
-      account_type === 'us' &&
-      (!address || !address.street_line_1 || !address.city || !address.country)
-    ) {
+    if (account_type === 'us' && !validateAddress(address)) {
       return res.status(400).json({
         code: 'bad_request',
-        message:
-          'address, street_line_1, city, country are required for us account',
+        message: 'invalid address',
       });
     }
-
-    // TODO: Sometimes state and postal code are required
 
     if (
       account_type === 'iban' &&
@@ -274,7 +326,7 @@ router.post(
       });
     }
 
-    if (currency != 'usd' && currency != 'eur') {
+    if (currency !== 'usd' && currency !== 'eur') {
       return res.status(400).json({
         code: 'bad_request',
         message: 'currency must be usd or eur',
@@ -282,7 +334,7 @@ router.post(
     }
 
     if (currency === 'eur') {
-      if (account_type != 'iban') {
+      if (account_type !== 'iban') {
         return res.status(400).json({
           code: 'bad_request',
           message: 'account_type must be iban if currency is eur',
@@ -290,7 +342,7 @@ router.post(
       }
     }
 
-    if (account_type != 'us' && account_type != 'iban') {
+    if (account_type !== 'us' && account_type !== 'iban') {
       return res.status(400).json({
         code: 'bad_request',
         message: 'account_type must be us or iban',
@@ -356,6 +408,9 @@ router.post(
         ...bankAccount,
       };
     }
+    return res.json(
+      data.customers[req.params.customerID].external_accounts[account_id],
+    );
   },
 );
 
@@ -432,6 +487,101 @@ router.get('/v0/customers/:customerID', (req: Request, res: Response) => {
     endorsements: customer.endorsements,
     created_at: customer.created_at,
     updated_at: customer.updated_at,
+  });
+});
+
+router.post('/v0/customers', (req: Request, res: Response) => {
+  const {
+    type,
+    first_name,
+    last_name,
+    email,
+    address,
+    birth_date,
+    tax_identification_number,
+    signed_agreement_id,
+  } = req.body;
+  if (
+    !type ||
+    !first_name ||
+    !last_name ||
+    !email ||
+    !address ||
+    !birth_date ||
+    !tax_identification_number ||
+    !signed_agreement_id
+  ) {
+    return res.status(400).json({
+      code: 'bad_request',
+      message:
+        'type, first_name, last_name, email, address, birth_date, tax_identification_number, and signed_agreement_id are required',
+    });
+  }
+
+  if (type !== 'individual') {
+    return res.status(400).json({
+      code: 'bad_request',
+      message: 'type must be individual',
+    });
+  }
+
+  // Check address
+  if (!validateAddress(address)) {
+    return res.status(400).json({
+      code: 'bad_request',
+      message: 'Invalid address',
+    });
+  }
+
+  // Check if signed_agreement_id correct
+  if (!data.tosIds[signed_agreement_id]) {
+    return res.status(400).json({
+      code: 'bad_request',
+      message: 'Invalid signed_agreement_id',
+    });
+  }
+
+  // Delete the signed_agreement_id so it can't be reused
+  delete data.tosIds[signed_agreement_id];
+
+  const customerID = uuidv4();
+
+  data.customers[customerID] = {
+    first_name,
+    last_name,
+    email,
+    status: 'active',
+    has_accepted_terms_of_service: true,
+    address,
+    rejection_reasons: [],
+    requirements_due: [],
+    future_requirements_due: [],
+    endorsements: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    kyc_link: `http://${req.get('host')}/${req.get('baseUrl')}/persona/kyc?session_token=${uuidv4()}`,
+    tos_link: ``,
+    kyc_status: 'not_started',
+    tos_status: 'approved',
+    external_accounts: {},
+    liquidation_addresses: {},
+    kyc_link_id: uuidv4(),
+  };
+
+  return res.json({
+    id: customerID,
+    first_name,
+    last_name,
+    email,
+    status: 'active',
+    has_accepted_terms_of_service: true,
+    address,
+    rejection_reasons: [],
+    requirements_due: [],
+    future_requirements_due: [],
+    endorsements: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   });
 });
 

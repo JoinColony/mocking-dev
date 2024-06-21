@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <title>Bridge TOS</title>
+        <script>
+
+            function formSubmit(event) {
+                var url = "./accept-terms-of-service";
+                var request = new XMLHttpRequest();
+                request.open('POST', url, true);
+                request.onload = function() { // request successful
+                // we can use server response to our request now
+                    parent.postMessage({signedAgreementId: JSON.parse(request.responseText).signed_agreement_id}, "*")
+                };
+
+                request.onerror = function() {
+                    // request failed
+                    console.log('Request failed');
+                };
+
+                request.send(new FormData(event.target)); // create FormData from form that triggered event
+                event.preventDefault();
+            }
+
+            window.onload = function() {
+                var frm = document.forms[0];
+                const urlParams = new URLSearchParams(location.search);
+                const session_token = urlParams.get('session_token')
+                frm.session_token.value = session_token;
+                frm.addEventListener('submit', formSubmit);
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Bridge TOS</h1>
+        <p>Bridge TOS page</p>
+        <form method="POST">
+            <input type="hidden" name="session_token" value="" />
+            <button type="submit">Accept</button>
+        </form>
+    </body>
+</html>
