@@ -184,8 +184,8 @@ router.post('v0/kyc_links', (req: Request, res: Response) => {
     full_name: req.body.full_name,
     email: req.body.email,
     type: req.body.type,
-    kyc_link: 'www.kyclink.com/blah',
-    tos_link: 'www.toslink.com/blah',
+    kyc_link: data.customers[customer_id].kyc_link,
+    tos_link: data.customers[customer_id].tos_link,
     kyc_status: 'not_started',
     tos_status: 'pending',
     customer_id,
@@ -228,6 +228,20 @@ router.get('v0/kyc_links/:kycLinkID', (req: Request, res: Response) => {
     tos_status: customer.tos_status,
     customer_id: c[0],
   });
+});
+
+router.get('v0/customers/:customerID/kyc_link', (req: Request, res: Response) => {
+  const customer = data.customers[req.params.customerID];
+  if (!customer) {
+    return res.status(404).json({
+      code: 'Invalid',
+      message: 'Unknown customer id',
+    });
+  }
+
+  return res.json({
+    url: customer.kyc_link,
+  })
 });
 
 router.get(
