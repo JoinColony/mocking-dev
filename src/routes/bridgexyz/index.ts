@@ -368,8 +368,8 @@ router.post(
 
     if (account_type === 'us') {
       if (
-        typeof account.accountNumber !== 'string' ||
-        typeof account.routingNumber !== 'string'
+        typeof account.account_number !== 'string' ||
+        typeof account.routing_number !== 'string'
       ) {
         return res.status(400).json({
           code: 'bad_request',
