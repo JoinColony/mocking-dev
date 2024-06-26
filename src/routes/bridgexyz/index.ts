@@ -789,6 +789,36 @@ router.post(
 );
 
 router.get(
+  '/v0/customers/:customerID/liquidation_addresses',
+  (req: Request, res: Response) => {
+    if (!data.customers[req.params.customerID]) {
+      return res.status(404).json({
+        code: 'Invalid',
+        message: 'Unknown customer id',
+      });
+    }
+
+    const liquidation_addresses = Object.values(
+      data.customers[req.params.customerID].liquidation_addresses,
+    ).map((la) => {
+      return {
+        chain: la.chain,
+        address: la.address,
+        currency: la.currency,
+        external_account_id: la.external_account_id,
+        created_at: la.created_at,
+        updated_at: la.updated_at,
+      };
+    });
+
+    return res.json({
+      count: liquidation_addresses.length,
+      data: liquidation_addresses,
+    });
+  },
+);
+
+router.get(
   '/v0/customers/:customerID/liquidation_addresses/:liquidationAddressID',
   (req: Request, res: Response) => {
     if (!data.customers[req.params.customerID]) {
