@@ -806,7 +806,17 @@ router.get(
     const liquidation_addresses = Object.values(
       data.customers[req.params.customerID].liquidation_addresses,
     ).map((la) => {
+      // Get key that has matching la.address
+      const matchingKey = Object.keys(
+        data.customers[req.params.customerID].liquidation_addresses,
+      ).find(
+        (key) =>
+          data.customers[req.params.customerID].liquidation_addresses[key]
+            .address === la.address,
+      );
+
       return {
+        id: matchingKey,
         chain: la.chain,
         address: la.address,
         currency: la.currency,
