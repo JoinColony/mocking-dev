@@ -45,12 +45,10 @@ type LiquidationAddress = {
 };
 
 type Drain = {
-  amount: number;
+  amount: string;
   state: string;
   created_at: string;
   deposit_tx_hash: string;
-  destination_currency: string;
-  url: string;
   receipt: {
     destination_currency: string;
     url: string;
@@ -117,4 +115,5 @@ export type {
   TOSStatus,
   LiquidationAddress,
   LiquidationAddressSepa,
+  Drain,
 };
