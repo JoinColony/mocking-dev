@@ -158,7 +158,7 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
     return res.status(400).json({
       existing_kyc_link: {
         kyc_link: existingCustomer.kyc_link,
-        kyc_link_id: existingCustomer.kyc_link_id,
+        id: existingCustomer.kyc_link_id,
       },
     });
   }
