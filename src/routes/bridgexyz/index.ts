@@ -8,7 +8,11 @@ import postalCodes from 'postal-codes-js';
 import { v4 as uuidv4 } from 'uuid';
 
 import data from './data.ts';
-import { type BankAccountCommon } from './types.ts';
+import {
+  type BankAccountCommon,
+  type BankAccountIBAN,
+  type BankAccountUS,
+} from './types.ts';
 
 function validateAddress(addressObject: { [key: string]: string }) {
   // street_line_2 can be provided, but can be anything
@@ -257,6 +261,15 @@ router.get(
         message: 'Unknown customer id',
       });
     }
+
+    const retObject: { data: (BankAccountUS | BankAccountIBAN)[] } = {
+      data: [],
+    };
+
+    Object.keys(data.customers[customerID].external_accounts).forEach((key) => {
+      retObject.data.push({
+        ...data.customers[customerID].external_accounts[key],
+      });
 
     return res.json(data.customers[customerID].external_accounts);
   },
