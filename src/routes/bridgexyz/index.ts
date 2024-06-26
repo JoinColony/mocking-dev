@@ -163,6 +163,7 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
       existing_kyc_link: {
         customer_id: existingCustomerId,
         kyc_link: existingCustomer.kyc_link,
+        tos_link: existingCustomer.tos_link,
         id: existingCustomer.kyc_link_id,
       },
     });
