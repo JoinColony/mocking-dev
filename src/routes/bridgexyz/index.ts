@@ -69,7 +69,7 @@ router.post('/persona/kyc', (req: Request, res: Response) => {
   const c = Object.keys(data.customers).filter(
     (customerId) =>
       data.customers[customerId].kyc_link ===
-      `http://${req.get('host')}/${req.get('baseUrl')}/persona/kyc?session_token=${req.body.session_token}`,
+      `http://${req.get('host')}${req.baseUrl}/persona/kyc?session_token=${req.body.session_token}`,
   );
   if (c.length === 0) {
     return res.status(404).json({
@@ -155,7 +155,7 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
     first_name: req.body.full_name.split()[0],
     last_name: req.body.full_name.split().slice(1).join(' '),
     email: req.body.email,
-    kyc_link: `http://${req.get('host')}/${req.get('baseUrl')}/persona/kyc?session_token=${uuidv4()}`,
+    kyc_link: `http://${req.get('host')}${req.baseUrl}/persona/kyc?session_token=${uuidv4()}`,
     tos_link: `https://dashboard.bridge.xyz/accept-terms-of-service?session_token=${uuidv4()}`, // Peopole consuming can add redirect_uri
     kyc_status: 'not_started',
     tos_status: 'pending',
@@ -638,7 +638,7 @@ router.post('/v0/customers', (req: Request, res: Response) => {
     endorsements: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    kyc_link: `http://${req.get('host')}/${req.get('baseUrl')}/persona/kyc?session_token=${uuidv4()}`,
+    kyc_link: `http://${req.get('host')}${req.baseUrl}/persona/kyc?session_token=${uuidv4()}`,
     tos_link: ``,
     kyc_status: 'not_started',
     tos_status: 'approved',
