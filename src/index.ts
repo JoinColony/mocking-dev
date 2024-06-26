@@ -30,4 +30,4 @@ app.listen(port, () => {
 });
 
 // Update listeners every 10 seconds
-setInterval(updateDrainListeners, 60 * 1000);
+setInterval(updateDrainListeners, 10 * 1000);

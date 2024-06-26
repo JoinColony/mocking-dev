@@ -1,5 +1,4 @@
-import ethers from 'ethers';
-import { Contract } from 'ethers';
+import { ethers, type Contract } from 'ethers';
 
 import data from './data.ts';
 import { type Drain } from './types.ts';
