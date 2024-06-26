@@ -429,7 +429,7 @@ router.post(
 );
 
 router.get(
-  'v0/customers/:customerID/external_accounts/:externalAccountID',
+  '/v0/customers/:customerID/external_accounts/:externalAccountID',
   (req: Request, res: Response) => {
     if (!req.params.customerID || !req.params.externalAccountID) {
       return res.status(400).json({
@@ -600,7 +600,7 @@ router.post('/v0/customers', (req: Request, res: Response) => {
 });
 
 router.post(
-  'v0/customers/:customerID/liquidation_addresses',
+  '/v0/customers/:customerID/liquidation_addresses',
   (req: Request, res: Response) => {
     const customer = data.customers[req.params.customerID];
     // See if customer exists
@@ -698,7 +698,7 @@ router.post(
 );
 
 router.get(
-  'v0/customers/:customerID/liquidation_addresses/:liquidationAddressID',
+  '/v0/customers/:customerID/liquidation_addresses/:liquidationAddressID',
   (req: Request, res: Response) => {
     if (!data.customers[req.params.customerID]) {
       return res.status(404).json({
@@ -734,10 +734,13 @@ router.get(
   },
 );
 
-router.get('v0/developer/fees', (req: Request, res: Response) => {
+router.get('/v0/developer/fees', (req: Request, res: Response) => {
   return res.json({
     default_liquidation_address_fee_percent: '1.3',
   });
 });
 
 export default router;
+
+// TODO:
+// https://api.bridge.xyz/v0/customers/{customerID}/liquidation_addresses/{liquidationAddressID}/drains
