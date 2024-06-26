@@ -54,8 +54,8 @@ type Drain = {
   receipt: {
     destination_currency: string;
     url: string;
-  }
-}
+  };
+};
 
 type LiquidationAddressSepa = LiquidationAddress & {
   destination_sepa_reference: string;

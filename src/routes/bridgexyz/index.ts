@@ -270,7 +270,7 @@ router.get(
       retObject.data.push({
         ...data.customers[customerID].external_accounts[key],
       });
-
+    });
     return res.json(data.customers[customerID].external_accounts);
   },
 );
@@ -759,6 +759,7 @@ router.post(
         destination_sepa_reference: `SEPA reference`,
         destination_payment_rail: 'sepa',
         destination_currency: 'eur',
+        drains: [],
       };
     } else {
       customer.liquidation_addresses[la_id] = {
@@ -768,6 +769,7 @@ router.post(
         address: `0x${crypto.randomBytes(20).toString('hex')}`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        drains: [],
       };
     }
 
@@ -854,6 +856,3 @@ router.get('/v0/developer/fees', (req: Request, res: Response) => {
 });
 
 export default router;
-
-// TODO:
-// https://api.bridge.xyz/v0/customers/{customerID}/liquidation_addresses/{liquidationAddressID}/drains
