@@ -70,10 +70,8 @@ router.post('/persona/kyc', (req: Request, res: Response) => {
   }
 
   // Find the customer
-  const c = Object.keys(data.customers).filter(
-    (customerId) =>
-      data.customers[customerId].kyc_link ===
-      `http://${req.get('host')}${req.baseUrl}/persona/kyc?session_token=${req.body.session_token}`,
+  const c = Object.keys(data.customers).filter((customerId) =>
+    data.customers[customerId].kyc_link.includes(req.body.session_token),
   );
   if (c.length === 0) {
     return res.status(404).json({
