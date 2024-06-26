@@ -32,7 +32,7 @@ function validateAddress(addressObject: { [key: string]: string }) {
 
   // Validating against '.' only works
   if (
-    postalCodes.validate(country, postal_code) !== true ||
+    postalCodes.validate(country, postal_code) !== true &&
     postalCodes.validate(country, '.') !== true
   ) {
     return false;
@@ -296,7 +296,7 @@ router.post(
       });
     }
 
-    if (account_type === 'us' && !validateAddress(address)) {
+    if (account_type === 'us' && !validateAddress(JSON.parse(address))) {
       return res.status(400).json({
         code: 'bad_request',
         message: 'invalid address',
@@ -605,7 +605,7 @@ router.post('/v0/customers', (req: Request, res: Response) => {
   }
 
   // Check address
-  if (!validateAddress(address)) {
+  if (!validateAddress(JSON.parse(address))) {
     return res.status(400).json({
       code: 'bad_request',
       message: 'Invalid address',
@@ -631,7 +631,7 @@ router.post('/v0/customers', (req: Request, res: Response) => {
     email,
     status: 'active',
     has_accepted_terms_of_service: true,
-    address,
+    address: JSON.parse(address),
     rejection_reasons: [],
     requirements_due: [],
     future_requirements_due: [],
