@@ -799,6 +799,41 @@ router.get(
   },
 );
 
+router.get(
+  '/v0/customers/:customerID/liquidation_addresses/:liquidationAddressID/drains',
+  (req: Request, res: Response) => {
+    if (
+      !data
+        .customers[req.params.customerID]
+      ) {
+      return res.status(404).json({
+        code: 'Invalid',
+        message: 'Unknown customer id',
+      });
+    }
+    if (
+      !data
+        .customers[req.params.customerID]
+        .liquidation_addresses[req.params.liquidationAddressID]
+    ) {
+      return res.status(404).json({
+        code: 'Invalid',
+        message: 'Unknown liquidation address id',
+      });
+    }
+
+    const drains = data
+        .customers[req.params.customerID]
+        .liquidation_addresses[req.params.liquidationAddressID]
+        .drains;
+
+    return res.json({
+      count: drains.length,
+      drains
+    });
+  },
+);
+
 router.get('/v0/developer/fees', (req: Request, res: Response) => {
   return res.json({
     default_liquidation_address_fee_percent: '1.3',

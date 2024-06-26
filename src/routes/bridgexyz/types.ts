@@ -41,7 +41,21 @@ type LiquidationAddress = {
   updated_at: string;
   chain: string;
   external_account_id: string;
+  drains: Drain[];
 };
+
+type Drain = {
+  amount: number;
+  state: string;
+  created_at: string;
+  deposit_tx_hash: string;
+  destination_currency: string;
+  url: string;
+  receipt: {
+    destination_currency: string;
+    url: string;
+  }
+}
 
 type LiquidationAddressSepa = LiquidationAddress & {
   destination_sepa_reference: string;
