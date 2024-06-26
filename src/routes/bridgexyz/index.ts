@@ -152,6 +152,18 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
     });
   }
 
+  const existingCustomer = Object.values(data.customers).filter(
+    (customer) => customer.email === email,
+  )[0];
+
+  if (existingCustomer) {
+    return res.status(400).json({
+      existing_kyc_link: {
+        kyc_link: existingCustomer.kyc_link,
+      },
+    });
+  }
+
   const customer_id = uuidv4();
   const kyc_id = uuidv4();
   data.customers[customer_id] = {
