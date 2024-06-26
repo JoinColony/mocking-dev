@@ -271,7 +271,7 @@ router.get(
         ...data.customers[customerID].external_accounts[key],
       });
     });
-    return res.json(data.customers[customerID].external_accounts);
+    return res.json(retObject);
   },
 );
 
@@ -817,19 +817,16 @@ router.get(
 router.get(
   '/v0/customers/:customerID/liquidation_addresses/:liquidationAddressID/drains',
   (req: Request, res: Response) => {
-    if (
-      !data
-        .customers[req.params.customerID]
-      ) {
+    if (!data.customers[req.params.customerID]) {
       return res.status(404).json({
         code: 'Invalid',
         message: 'Unknown customer id',
       });
     }
     if (
-      !data
-        .customers[req.params.customerID]
-        .liquidation_addresses[req.params.liquidationAddressID]
+      !data.customers[req.params.customerID].liquidation_addresses[
+        req.params.liquidationAddressID
+      ]
     ) {
       return res.status(404).json({
         code: 'Invalid',
@@ -837,14 +834,14 @@ router.get(
       });
     }
 
-    const drains = data
-        .customers[req.params.customerID]
-        .liquidation_addresses[req.params.liquidationAddressID]
-        .drains;
+    const { drains } =
+      data.customers[req.params.customerID].liquidation_addresses[
+        req.params.liquidationAddressID
+      ];
 
     return res.json({
       count: drains.length,
-      drains
+      drains,
     });
   },
 );
