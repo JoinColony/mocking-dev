@@ -296,7 +296,7 @@ router.post(
       });
     }
 
-    if (account_type === 'us' && !validateAddress(JSON.parse(address))) {
+    if (account_type === 'us' && !validateAddress(address)) {
       return res.status(400).json({
         code: 'bad_request',
         message: 'invalid address',
@@ -605,7 +605,7 @@ router.post('/v0/customers', (req: Request, res: Response) => {
   }
 
   // Check address
-  if (!validateAddress(JSON.parse(address))) {
+  if (!validateAddress(address)) {
     return res.status(400).json({
       code: 'bad_request',
       message: 'Invalid address',
