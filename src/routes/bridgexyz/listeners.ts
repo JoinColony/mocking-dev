@@ -1,4 +1,5 @@
 import ethers from 'ethers';
+import { Contract } from 'ethers';
 
 import data from './data.ts';
 import { type Drain } from './types.ts';
@@ -7,9 +8,9 @@ const ERC20_ABI = [
   'event Transfer(address indexed from, address indexed to, uint256 amount)',
 ];
 
-const listeners = {} as { [key: string]: 'Any' };
+const listeners = {} as { [key: string]: Contract };
 
-exports.updateDrainListeners = async function () {
+async function updateDrainListeners() {
   const provider = new ethers.providers.JsonRpcProvider(
     'https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID',
   );
@@ -48,4 +49,6 @@ exports.updateDrainListeners = async function () {
       }
     }
   }
-};
+}
+
+export { updateDrainListeners };
