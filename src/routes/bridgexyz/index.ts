@@ -130,7 +130,7 @@ router.post('/accept-terms-of-service', (req: Request, res: Response) => {
   return res.send({ signed_agreement_id });
 });
 
-router.post('v0/kyc_links', (req: Request, res: Response) => {
+router.post('/v0/kyc_links', (req: Request, res: Response) => {
   const { full_name, email, type } = req.body;
   if (!full_name || !email || !type) {
     const names = ['full_name', 'email', 'type'];
@@ -192,7 +192,7 @@ router.post('v0/kyc_links', (req: Request, res: Response) => {
   });
 });
 
-router.get('v0/kyc_links/:kycLinkID', (req: Request, res: Response) => {
+router.get('/v0/kyc_links/:kycLinkID', (req: Request, res: Response) => {
   const { kycLinkID } = req.params;
   const c = Object.keys(data.customers).filter(
     (customerId) => data.customers[customerId].kyc_link_id === kycLinkID,
@@ -230,7 +230,7 @@ router.get('v0/kyc_links/:kycLinkID', (req: Request, res: Response) => {
   });
 });
 
-router.get('v0/customers/:customerID/kyc_link', (req: Request, res: Response) => {
+router.get('/v0/customers/:customerID/kyc_link', (req: Request, res: Response) => {
   const customer = data.customers[req.params.customerID];
   if (!customer) {
     return res.status(404).json({
@@ -245,7 +245,7 @@ router.get('v0/customers/:customerID/kyc_link', (req: Request, res: Response) =>
 });
 
 router.get(
-  'v0/customers/:customerID/external_accounts',
+  '/v0/customers/:customerID/external_accounts',
   (req: Request, res: Response) => {
     const { customerID } = req.params;
     if (!data.customers[customerID]) {
@@ -260,7 +260,7 @@ router.get(
 );
 
 router.post(
-  'v0/customers/:customerID/external_accounts',
+  '/v0/customers/:customerID/external_accounts',
   (req: Request, res: Response) => {
     let { currency, account_type } = req.body;
     const {
