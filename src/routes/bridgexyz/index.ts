@@ -30,7 +30,7 @@ function validateAddress(addressObject: { [key: string]: string }) {
     return false;
   }
 
-  // Validating against '.' only works 
+  // Validating against '.' only works
   if (
     postalCodes.validate(country, postal_code) !== true ||
     postalCodes.validate(country, '.') !== true
@@ -230,19 +230,22 @@ router.get('/v0/kyc_links/:kycLinkID', (req: Request, res: Response) => {
   });
 });
 
-router.get('/v0/customers/:customerID/kyc_link', (req: Request, res: Response) => {
-  const customer = data.customers[req.params.customerID];
-  if (!customer) {
-    return res.status(404).json({
-      code: 'Invalid',
-      message: 'Unknown customer id',
-    });
-  }
+router.get(
+  '/v0/customers/:customerID/kyc_link',
+  (req: Request, res: Response) => {
+    const customer = data.customers[req.params.customerID];
+    if (!customer) {
+      return res.status(404).json({
+        code: 'Invalid',
+        message: 'Unknown customer id',
+      });
+    }
 
-  return res.json({
-    url: customer.kyc_link,
-  })
-});
+    return res.json({
+      url: customer.kyc_link,
+    });
+  },
+);
 
 router.get(
   '/v0/customers/:customerID/external_accounts',
@@ -486,6 +489,68 @@ router.get('/v0/customers/:customerID', (req: Request, res: Response) => {
       message: 'Unknown customer id',
     });
   }
+
+  return res.json({
+    id: req.params.customerID,
+    first_name: customer.first_name,
+    last_name: customer.last_name,
+    email: customer.email,
+    status: customer.status,
+    has_accepted_terms_of_service: customer.has_accepted_terms_of_service,
+    address: customer.address,
+    rejection_reasons: customer.rejection_reasons,
+    requirements_due: customer.requirements_due,
+    future_requirements_due: customer.future_requirements_due,
+    endorsements: customer.endorsements,
+    created_at: customer.created_at,
+    updated_at: customer.updated_at,
+  });
+});
+
+router.put('/v0/customers/:customerID', (req: Request, res: Response) => {
+  const customer = data.customers[req.params.customerID];
+  // See if customer exists
+  if (!customer) {
+    return res.status(404).json({
+      code: 'Invalid',
+      message: 'Unknown customer id',
+    });
+  }
+
+  const {
+    type,
+    first_name,
+    last_name,
+    email,
+    address,
+    birth_date,
+    tax_identification_number,
+    signed_agreement_id,
+  } = req.body;
+
+  if (
+    !type ||
+    !first_name ||
+    !last_name ||
+    !email ||
+    !address ||
+    !birth_date ||
+    !tax_identification_number ||
+    !signed_agreement_id
+  ) {
+    return res.status(400).json({
+      code: 'bad_request',
+      message:
+        'type, first_name, last_name, email, address, birth_date, tax_identification_number, and signed_agreement_id are required',
+    });
+  }
+
+  customer.first_name = first_name;
+  customer.last_name = last_name;
+  customer.email = email;
+  customer.address = address;
+  // customer.birth_date = birth_date;
+  // customer.tax_identification_number = tax_identification_number;
 
   return res.json({
     id: req.params.customerID,
