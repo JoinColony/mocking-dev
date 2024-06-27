@@ -2,6 +2,7 @@ import { ethers, type Event } from 'ethers';
 
 import data from './data.ts';
 import { type Drain } from './types.ts';
+import { v4 as uuidv4 } from 'uuid';
 
 const USDC_ADDRESS = '0xC83649CC2f5488E95989Ec6d4CEc98A74793E2a7';
 const USDC_ABI = [
@@ -17,31 +18,37 @@ async function updateDrainListeners() {
   console.log('Setting drain listeners...');
 
   for (const customerId of Object.keys(data.customers)) {
-    console.log('For customer', customerId)
-    console.log('Customer:', data.customers[customerId])
-    console.log('Liquidation addresses:', data.customers[customerId].liquidation_addresses)
+    console.log('For customer', customerId);
+    console.log('Customer:', data.customers[customerId]);
+    console.log(
+      'Liquidation addresses:',
+      data.customers[customerId].liquidation_addresses,
+    );
     for (const liquidationAddressId of Object.keys(
       data.customers[customerId].liquidation_addresses,
     )) {
-      console.log('For liquidation address', liquidationAddressId)
+      console.log('For liquidation address', liquidationAddressId);
       if (!listenerSet[liquidationAddressId]) {
         const { address } =
           data.customers[customerId].liquidation_addresses[
             liquidationAddressId
           ];
-        console.log("has contract address", address);
+        console.log('has contract address', address);
         erc20Contract.on(
           'Transfer',
           async (from: string, to: string, amount: number, event: Event) => {
             // Only care about token transfers to the liquidation address
-            console.log("to", to, address);
-            if (to !== address) {
+            console.log('to', to, address);
+            if (
+              ethers.utils.getAddress(to) !== ethers.utils.getAddress(address)
+            ) {
               return;
             }
 
             const txReceipt = await event.getTransactionReceipt();
 
             const drain: Drain = {
+              id: uuidv4(),
               amount: amount.toString(),
               state: 'funds_received',
               created_at: new Date().toString(),
