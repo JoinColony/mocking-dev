@@ -45,6 +45,7 @@ type LiquidationAddress = {
 };
 
 type Drain = {
+  id: string;
   amount: string;
   state: string;
   created_at: string;
