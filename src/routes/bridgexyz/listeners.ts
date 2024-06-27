@@ -18,27 +18,18 @@ async function updateDrainListeners() {
   console.log('Setting drain listeners...');
 
   for (const customerId of Object.keys(data.customers)) {
-    console.log('For customer', customerId);
-    console.log('Customer:', data.customers[customerId]);
-    console.log(
-      'Liquidation addresses:',
-      data.customers[customerId].liquidation_addresses,
-    );
     for (const liquidationAddressId of Object.keys(
       data.customers[customerId].liquidation_addresses,
     )) {
-      console.log('For liquidation address', liquidationAddressId);
       if (!listenerSet[liquidationAddressId]) {
         const { address } =
           data.customers[customerId].liquidation_addresses[
             liquidationAddressId
           ];
-        console.log('has contract address', address);
         erc20Contract.on(
           'Transfer',
           async (from: string, to: string, amount: number, event: Event) => {
             // Only care about token transfers to the liquidation address
-            console.log('to', to, address);
             if (
               ethers.utils.getAddress(to) !== ethers.utils.getAddress(address)
             ) {

@@ -697,7 +697,6 @@ router.post('/v0/customers', (req: Request, res: Response) => {
 router.post(
   '/v0/customers/:customerID/liquidation_addresses',
   (req: Request, res: Response) => {
-    console.log('********trying to create liquidationa ddress')
     const customer = data.customers[req.params.customerID];
     // See if customer exists
     if (!customer) {
