@@ -264,16 +264,24 @@ router.get('/v0/kyc_links/:kycLinkID', (req: Request, res: Response) => {
   });
 });
 
-router.get(
-  '/v0/customers/:customerID/kyc_link',
-  (req: Request, res: Response) => {
+router.use(
+  '/v0/customers/:customerID/*',
+  (req: Request, res: Response, next) => {
     const customer = data.customers[req.params.customerID];
-    if (!customer) {
+    if (!customer || customer.kyc_status !== 'approved') {
       return res.status(404).json({
         code: 'Invalid',
         message: 'Unknown customer id',
       });
     }
+    next();
+  },
+);
+
+router.get(
+  '/v0/customers/:customerID/kyc_link',
+  (req: Request, res: Response) => {
+    const customer = data.customers[req.params.customerID];
 
     return res.json({
       url: customer.kyc_link,
@@ -285,12 +293,6 @@ router.get(
   '/v0/customers/:customerID/external_accounts',
   (req: Request, res: Response) => {
     const { customerID } = req.params;
-    if (!data.customers[customerID]) {
-      return res.status(404).json({
-        code: 'Invalid',
-        message: 'Unknown customer id',
-      });
-    }
 
     const retObject: { data: (BankAccountUS | BankAccountIBAN)[] } = {
       data: [],
@@ -484,13 +486,6 @@ router.get(
       });
     }
 
-    if (!data.customers[req.params.customerID]) {
-      return res.status(404).json({
-        code: 'Invalid',
-        message: 'Unknown customer id',
-      });
-    }
-
     if (
       !data.customers[req.params.customerID].external_accounts[
         req.params.externalAccountID
@@ -525,13 +520,6 @@ router.get(
 
 router.get('/v0/customers/:customerID', (req: Request, res: Response) => {
   const customer = data.customers[req.params.customerID];
-  // See if customer exists
-  if (!customer) {
-    return res.status(404).json({
-      code: 'Invalid',
-      message: 'Unknown customer id',
-    });
-  }
 
   return res.json({
     id: req.params.customerID,
@@ -552,13 +540,6 @@ router.get('/v0/customers/:customerID', (req: Request, res: Response) => {
 
 router.put('/v0/customers/:customerID', (req: Request, res: Response) => {
   const customer = data.customers[req.params.customerID];
-  // See if customer exists
-  if (!customer) {
-    return res.status(404).json({
-      code: 'Invalid',
-      message: 'Unknown customer id',
-    });
-  }
 
   const {
     type,
@@ -711,13 +692,6 @@ router.post(
   '/v0/customers/:customerID/liquidation_addresses',
   (req: Request, res: Response) => {
     const customer = data.customers[req.params.customerID];
-    // See if customer exists
-    if (!customer) {
-      return res.status(404).json({
-        code: 'Invalid',
-        message: 'Unknown customer id',
-      });
-    }
 
     const {
       chain,
@@ -810,12 +784,6 @@ router.post(
 router.get(
   '/v0/customers/:customerID/liquidation_addresses',
   (req: Request, res: Response) => {
-    if (!data.customers[req.params.customerID]) {
-      return res.status(404).json({
-        code: 'Invalid',
-        message: 'Unknown customer id',
-      });
-    }
 
     const liquidation_addresses = Object.values(
       data.customers[req.params.customerID].liquidation_addresses,
@@ -850,12 +818,6 @@ router.get(
 router.get(
   '/v0/customers/:customerID/liquidation_addresses/:liquidationAddressID',
   (req: Request, res: Response) => {
-    if (!data.customers[req.params.customerID]) {
-      return res.status(404).json({
-        code: 'Invalid',
-        message: 'Unknown customer id',
-      });
-    }
     if (
       !data.customers[req.params.customerID].liquidation_addresses[
         req.params.liquidationAddressID
@@ -887,12 +849,6 @@ router.get(
 router.get(
   '/v0/customers/:customerID/liquidation_addresses/:liquidationAddressID/drains',
   (req: Request, res: Response) => {
-    if (!data.customers[req.params.customerID]) {
-      return res.status(404).json({
-        code: 'Invalid',
-        message: 'Unknown customer id',
-      });
-    }
     if (
       !data.customers[req.params.customerID].liquidation_addresses[
         req.params.liquidationAddressID
