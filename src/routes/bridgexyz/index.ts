@@ -206,6 +206,8 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
     });
   }
 
+  const kycLinkHost = process.env.KYC_LINK_HOST || req.get('host');
+
   const customer_id = uuidv4();
   const kyc_id = uuidv4();
   data.customers[customer_id] = {
@@ -213,7 +215,7 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
     first_name: req.body.full_name.split()[0],
     last_name: req.body.full_name.split().slice(1).join(' '),
     email: req.body.email,
-    kyc_link: `http://${req.get('host')}${req.baseUrl}/persona/kyc?session_token=${uuidv4()}`,
+    kyc_link: `http://${kycLinkHost}${req.baseUrl}/persona/kyc?session_token=${uuidv4()}`,
     tos_link: `https://dashboard.bridge.xyz/accept-terms-of-service?session_token=${uuidv4()}&customer_id=${customer_id}`, // Peopole consuming can add redirect_uri
     kyc_status: 'not_started',
     tos_status: 'pending',
