@@ -45,9 +45,22 @@ function validateAddress(addressObject: { [key: string]: string }) {
   return true;
 }
 
-// TODO: Idempontency key
-
 const router = express.Router();
+
+router.use('*', (req: Request, res: Response, next) => {
+  // console.log(`[bridgexyz] ${req.method} ${req.originalUrl}`);
+  // TODO: This maybe should also be a requirement for PUTs?
+  if (req.method === 'POST') {
+    // Require Idempontency-Key header to be set
+    if (!req.header('Idempotency-Key')) {
+      return res.status(400).json({
+        code: 'bad_request',
+        message: 'Idempotency-Key header is required',
+      });
+    }
+  }
+  next();
+});
 
 // Should be imported in the main file under the /bridgexyz route
 // TODO: require API key?
