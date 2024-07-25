@@ -1,10 +1,9 @@
 /* eslint-disable camelcase */
-import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
 import express, { type Request, type Response } from 'express';
 import fs from 'fs';
 import iso3166 from 'iso-3166-2';
-import postalCodes from 'postal-codes-js';
+// import postalCodes from 'postal-codes-js';
 import { v4 as uuidv4 } from 'uuid';
 
 import data from './data.ts';
@@ -14,9 +13,20 @@ import {
   type BankAccountUS,
 } from './types.ts';
 
-function validateAddress(addressObject: { [key: string]: string }) {
+function validateAddress(address: { [key: string]: string } | string) {
+  let addressObject: { [key: string]: string };
+  if (typeof address === 'string') {
+    try {
+      addressObject = JSON.parse(address);
+    } catch (e) {
+      return false;
+    }
+  } else {
+    addressObject = address;
+  }
+
   // street_line_2 can be provided, but can be anything
-  const { street_line_1, city, postal_code, state, country } = addressObject;
+  const { street_line_1, city, state, country } = addressObject;
   if (!street_line_1 || !city || !country) {
     return false;
   }
@@ -27,20 +37,21 @@ function validateAddress(addressObject: { [key: string]: string }) {
   }
 
   // State must be an ISO 3166-2 code, must be supplied if country has subdivisions
-  if (state && !iso3166.subdivision(country, state)) {
+  if (state && !lookedUpCountry.sub[state]) {
     return false;
   }
   if (!state && Object.keys(lookedUpCountry.sub).length > 0) {
     return false;
   }
 
-  // Validating against '.' only works
-  if (
-    postalCodes.validate(country, postal_code) !== true &&
-    postalCodes.validate(country, '.') !== true
-  ) {
-    return false;
-  }
+  // Bridge doesn't validate postcode?
+  // // Validating against '.' only works
+  // if (
+  //   postalCodes.validate(country, postal_code) !== true &&
+  //   postalCodes.validate(country, '.') !== true
+  // ) {
+  //   return false;
+  // }
 
   return true;
 }
