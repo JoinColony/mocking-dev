@@ -56,6 +56,7 @@ function validateAddress(address: { [key: string]: string } | string) {
   return true;
 }
 
+// Should be imported in the main file under the /bridgexyz route
 const router = express.Router();
 
 router.use('*', (req: Request, res: Response, next) => {
@@ -70,11 +71,18 @@ router.use('*', (req: Request, res: Response, next) => {
       });
     }
   }
-  next();
+  return next();
 });
 
-// Should be imported in the main file under the /bridgexyz route
-// TODO: require API key?
+router.use('/v0/*', (req: Request, res: Response, next) => {
+  if (!req.header('Api-Key')) {
+    return res.status(401).json({
+      code: 'Unauthorized',
+      message: 'Api-Key header is required',
+    });
+  }
+  return next();
+});
 
 router.get('/', (req: Request, res: Response) => {
   res.send('BridgeXYZ Mock API');
