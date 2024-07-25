@@ -174,7 +174,10 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
   if (existingCustomer) {
     return res.status(400).json({
       existing_kyc_link: {
-        customer_id: existingCustomerId,
+        customer_id:
+          existingCustomer.kyc_status === 'approved'
+            ? existingCustomerId
+            : null,
         kyc_link: existingCustomer.kyc_link,
         tos_link: existingCustomer.tos_link,
         id: existingCustomer.kyc_link_id,
@@ -190,7 +193,7 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
     last_name: req.body.full_name.split().slice(1).join(' '),
     email: req.body.email,
     kyc_link: `http://${req.get('host')}${req.baseUrl}/persona/kyc?session_token=${uuidv4()}`,
-    tos_link: `https://dashboard.bridge.xyz/accept-terms-of-service?session_token=${uuidv4()}`, // Peopole consuming can add redirect_uri
+    tos_link: `https://dashboard.bridge.xyz/accept-terms-of-service?session_token=${uuidv4()}&customer_id=${customer_id}`, // Peopole consuming can add redirect_uri
     kyc_status: 'not_started',
     tos_status: 'pending',
     address: {
@@ -222,7 +225,10 @@ router.post('/v0/kyc_links', (req: Request, res: Response) => {
     tos_link: data.customers[customer_id].tos_link,
     kyc_status: 'not_started',
     tos_status: 'pending',
-    customer_id,
+    customer_id:
+      data.customers[customer_id].kyc_status === 'approved'
+        ? customer_id
+        : null,
   });
 });
 
@@ -260,7 +266,7 @@ router.get('/v0/kyc_links/:kycLinkID', (req: Request, res: Response) => {
     tos_link: customer.tos_link,
     kyc_status: customer.kyc_status,
     tos_status: customer.tos_status,
-    customer_id: c[0],
+    customer_id: customer.kyc_status === 'approved' ? c[0] : null,
   });
 });
 
@@ -784,7 +790,6 @@ router.post(
 router.get(
   '/v0/customers/:customerID/liquidation_addresses',
   (req: Request, res: Response) => {
-
     const liquidation_addresses = Object.values(
       data.customers[req.params.customerID].liquidation_addresses,
     ).map((la) => {
